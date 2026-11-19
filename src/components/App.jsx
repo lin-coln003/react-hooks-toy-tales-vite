@@ -1,14 +1,17 @@
+
 import React, { useState, useEffect } from "react";
 import Header from "./Header";
 import ToyForm from "./ToyForm";
 import ToyContainer from "./ToyContainer";
+
+const API_URL = "http://localhost:3001/toys";
 
 function App() {
   const [showForm, setShowForm] = useState(false);
   const [toys, setToys] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:3000/toys")
+    fetch(API_URL)
       .then((response) => response.json())
       .then((data) => setToys(data))
       .catch((error) => console.error("Error fetching toys:", error));
@@ -19,7 +22,7 @@ function App() {
   }
 
   async function handleLikeToy(toy) {
-    const response = await fetch(`http://localhost:3000/toys/${toy.id}`, {
+    const response = await fetch(`${API_URL}/${toy.id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -40,8 +43,23 @@ function App() {
     }
   }
 
+  async function handleAddToy(newToy) {
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(newToy),
+  });
+
+  if (response.ok) {
+    const createdToy = await response.json();
+    setToys((currentToys) => [...currentToys, createdToy]);
+  }
+}
+
   async function handleDeleteToy(id) {
-    const response = await fetch(`http://localhost:3000/toys/${id}`, {
+    const response = await fetch(`${API_URL}/${id}`, {
       method: "DELETE",
     });
 
@@ -55,7 +73,8 @@ function App() {
   return (
     <>
       <Header />
-      {showForm ? <ToyForm /> : null}
+
+      {showForm ? <ToyForm onAddToy={handleAddToy} /> : null}
 
       <div className="buttonContainer">
         <button onClick={handleClick}>Add a Toy</button>
